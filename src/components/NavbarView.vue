@@ -31,6 +31,8 @@ nav
 <script>
 import { ref } from '@vue/reactivity'
 import { useRoute, useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
+
 export default {
   setup () {
     const router = useRouter()
@@ -42,10 +44,24 @@ export default {
     const logout = () => {
       localStorage.removeItem('token')
       router.push('/login')
+      Swal.fire({
+        title: 'Berhasil keluar',
+        toast: true,
+        icon: 'success',
+        showConfirmButton: false,
+        timerProgressBar: true,
+        timer: 1500,
+        position: 'top-end',
+        didOpen: (toast) => {
+          toast.addEventListener('mouseover', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      })
     }
 
     const search = () => {
-      router.push({ path: route.path, query: { ...route.query, keyword: keyword.value } })
+      router.push({ path: '/', query: { ...route.query, keyword: keyword.value } })
+      keyword.value = ''
     }
 
     return {

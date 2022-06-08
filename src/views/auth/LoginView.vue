@@ -32,6 +32,8 @@
 import { reactive } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2'
+
 export default {
   setup () {
     const store = useStore()
@@ -45,10 +47,35 @@ export default {
     const login = () => {
       store.dispatch('Login', form)
         .then(() => {
-          router.push('/?keyword=&price=0,750000&page=1&limit=10&order=product_name,ASC')
+          Swal.fire({
+            title: 'Berhasil masuk',
+            toast: true,
+            icon: 'success',
+            showConfirmButton: false,
+            timerProgressBar: true,
+            timer: 1500,
+            position: 'top-end',
+            didOpen: (toast) => {
+              toast.addEventListener('mouseover', Swal.stopTimer)
+              toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+          })
+          router.push('/?keyword=&price=&page=1&limit=10&order=product_name,ASC')
         })
-        .catch((err) => {
-          console.log(err)
+        .catch(() => {
+          Swal.fire({
+            title: 'Email atau password salah',
+            toast: true,
+            icon: 'error',
+            showConfirmButton: false,
+            timerProgressBar: true,
+            timer: 1500,
+            position: 'top-end',
+            didOpen: (toast) => {
+              toast.addEventListener('mouseover', Swal.stopTimer)
+              toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+          })
         })
     }
 

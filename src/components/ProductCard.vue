@@ -14,16 +14,19 @@
   .description
     p.name {{ titleConverter(product.name) }}
     p.product-by {{ product.product_type.name }}
-    .rating start
+    .rating
+      font-awesome-icon.icon(:icon='["fas", "star"]' v-for='star in 5' :key='star')
+      p (5)
     p.price {{ convertToIDR(product.price) }}
 </template>
 
 <script>
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 export default {
   props: ['product'],
   setup () {
     const router = useRouter()
+    const route = useRoute()
 
     const convertToIDR = (val) => {
       const format = val.toString().split('').reverse().join('')
@@ -37,7 +40,7 @@ export default {
     }
 
     const seeDetail = (val) => {
-      router.push(`/${val}`)
+      router.push({ path: `/${val}`, query: route.query })
     }
 
     return {
@@ -146,6 +149,12 @@ export default {
   line-height: 15px;
   text-align: center;
   color: #696969;
+  display: flex;
+  align-items: center;
+}
+
+.product-box .description .rating .icon {
+  color: #FFC107;
 }
 
 .product-box .description .price{

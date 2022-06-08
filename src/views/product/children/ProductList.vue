@@ -13,7 +13,7 @@
           .range-input
             input(type="range" class="range-min" min="0" max="1000000" v-model="price.min" step="100")
             input(type="range" class="range-max" min="0" max="1000000" v-model="price.max" step="100")
-          .price-input
+          form.price-input(@submit.prevent='updatePrice')
             .field
               span Rp
               input(type='number' v-model="price.min")
@@ -21,7 +21,8 @@
             .field
               span Rp
               input(type='number' v-model="price.max")
-          button(type='submit')
+            button(type='submit' hidden)
+          button(type='submit' hidden)
       .type
         type-carousel(
           v-for='(value, index) in dummyCategory'
@@ -33,8 +34,8 @@
         .show
           p Menampilkan
             select
-              option(selected value='10') 10
-            |  dari {{ products.total }}
+              option(selected :value='products.total ? products.total : 10') {{ products.total ? products.total : 10 }}
+            |  dari {{ products.total ? products.total : '' }}
         .short
           p Urutkan
             select(@change="sortingList" v-model='sorting')
@@ -45,18 +46,22 @@
               option(value='date,ASC') Tanggal ASC
               option(value='date,DESC') Tanggal DESC
       .product
-          product-card(
-            v-for='product in products.list'
-            :key='product.id'
-            :product='product'
-          )
+        div(
+          v-if='!products'
+        ) Loading ...
+        product-card(
+          v-else
+          v-for='product in products.list'
+          :key='product.id'
+          :product='product'
+        )
 </template>
 
 <script>
 import ProductCard from '@/components/ProductCard.vue'
 import TypeCarousel from '@/components/TypeCarousel.vue'
 import { useStore } from 'vuex'
-import { computed, onMounted, reactive, ref } from '@vue/runtime-core'
+import { computed, onMounted, reactive, ref, watch } from '@vue/runtime-core'
 import { useRoute, useRouter } from 'vue-router'
 
 export default {
@@ -133,7 +138,29 @@ export default {
       router.push({ path: route.path, query: { ...route.query, order: sorting.value } })
     }
 
+    watch(() => {
+      return route.query
+    }, (newVal) => {
+      if (newVal) {
+        getAllProduct()
+      }
+    })
+
+    const getAllProduct = () => {
+      const payload = {
+        keyword: route.query.keyword,
+        price: route.query.price,
+        page: route.query.page,
+        limit: route.query.limit,
+        order: route.query.order
+      }
+
+      store.dispatch('GetAllProduct', payload)
+    }
+
     onMounted(() => {
+      getAllProduct()
+
       const rangeInput = document.querySelectorAll('.range-input input')
       const priceInput = document.querySelectorAll('.price-input input')
       const range = document.querySelector('.slider .progress')

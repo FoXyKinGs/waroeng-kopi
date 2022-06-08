@@ -74,6 +74,8 @@
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { reactive, ref } from '@vue/reactivity'
+import Swal from 'sweetalert2'
+
 export default {
   setup () {
     const store = useStore()
@@ -95,7 +97,19 @@ export default {
 
     const register = () => {
       if (form.confirmPassword !== form.password) {
-        alert('Your confirm password are not recognice')
+        Swal.fire({
+          title: 'password tidak cocok',
+          toast: true,
+          icon: 'error',
+          showConfirmButton: false,
+          timerProgressBar: true,
+          timer: 1500,
+          position: 'top-end',
+          didOpen: (toast) => {
+            toast.addEventListener('mouseover', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+          }
+        })
       } else {
         const data = {
           name: `${form.firstName} ${form.lastName}`,
@@ -105,7 +119,22 @@ export default {
         }
 
         store.dispatch('Register', data)
-        router.push('/login')
+          .then(() => {
+            Swal.fire({
+              title: 'Berhasil membuat akun',
+              toast: true,
+              icon: 'success',
+              showConfirmButton: false,
+              timerProgressBar: true,
+              timer: 1500,
+              position: 'top-end',
+              didOpen: (toast) => {
+                toast.addEventListener('mouseover', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+              }
+            })
+            router.push('/login')
+          })
       }
     }
 

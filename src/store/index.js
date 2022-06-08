@@ -15,20 +15,29 @@ export default createStore({
       state.allProduct = payload
     },
     SET_DETAIL_PRODUCT (state, payload) {
-      const allProduct = state.allProduct.list
-      state.detailProduct = allProduct.find(item => item.id === Number(payload))
+      const allProduct = state.allProduct ? state.allProduct.list : false
+      if (allProduct) {
+        state.detailProduct = allProduct.find(item => item.id === Number(payload))
+      }
     }
   },
   actions: {
     Login (ctx, payload) {
-      Axios.post('login', payload)
-        .then(response => localStorage.setItem('token', response.data.data.token))
-        .catch(err => console.log(err))
+      return new Promise((resolve, reject) => {
+        Axios.post('login', payload)
+          .then(response => {
+            localStorage.setItem('token', response.data.data.token)
+            resolve(response.data.message)
+          })
+          .catch(err => reject(err))
+      })
     },
     Register (ctx, payload) {
-      Axios.post('register', payload)
-        .then(response => console.log(response.data.message))
-        .catch(err => console.log(err))
+      return new Promise((resolve, reject) => {
+        Axios.post('register', payload)
+          .then(response => resolve(response.data.message))
+          .catch(err => reject(err))
+      })
     },
     GetAllProduct (ctx, { keyword, price, page, limit, order }) {
       Axios.get(`product?keyword=${keyword}&price=${price}&page=${page}&limit=${limit}&order=${order}`)

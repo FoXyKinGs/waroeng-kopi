@@ -6,23 +6,36 @@
       p Belanja
       font-awesome-icon.icon(:icon="['fas', 'caret-down']")
   .chumb
-    p Home >> Product >> Roasted Bean
+    .product-detail(
+      v-if='$route.name === "productDetail"'
+    )
+      p.back(
+        @click='backToList()'
+      ) Home
+      p  >>
+      span  {{ product.name }}
+    p(
+      v-else
+    ) Home >> Product >>
+      span  Roasted Bean
   router-view
 </template>
 
 <script>
 import Navbar from '@/components/NavbarView.vue'
-import { useRoute } from 'vue-router'
-import { onMounted } from '@vue/runtime-core'
 import { useStore } from 'vuex'
+import { onMounted, computed } from '@vue/runtime-core'
+import { useRoute, useRouter } from 'vue-router'
 
 export default {
   components: {
     Navbar
   },
   setup () {
-    const route = useRoute()
     const store = useStore()
+    const route = useRoute()
+    const router = useRouter()
+    const product = computed(() => store.getters.detailProduct)
 
     onMounted(() => {
       const payload = {
@@ -35,6 +48,15 @@ export default {
 
       store.dispatch('GetAllProduct', payload)
     })
+
+    const backToList = () => {
+      router.push({ path: '/', query: route.query })
+    }
+
+    return {
+      product,
+      backToList
+    }
   }
 }
 </script>
@@ -70,5 +92,18 @@ export default {
 
 .chumb {
   padding: 40px 40px 0 40px;
+  display: flex;
+}
+
+.chumb .product-detail {
+  display: flex;
+}
+
+.chumb .product-detail .back {
+  cursor: pointer;
+}
+
+.chumb span {
+  color: #EB3F36;
 }
 </style>

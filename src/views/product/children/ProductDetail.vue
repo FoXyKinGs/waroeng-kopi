@@ -2,7 +2,15 @@
 .container
   .loading(
     v-if='!product.id'
-  ) Loading
+  )
+    p Produk list sedang/sudah di refresh, coba untuk masuk ulang ke produk list
+      .back(
+        @click='refreshAction("back")'
+      )
+        font-awesome-icon.icon(
+            :icon="['fas', 'arrow-left-long']"
+          )
+        |  Kembali
   div(
     v-else
   )
@@ -25,14 +33,23 @@
       .description
         p.name {{ product.name }}
         p.product-by {{ product.product_type.name }}
-        .rating start
+        .rating
+          font-awesome-icon.icon(:icon='["fas", "star"]' v-for='star in 5' :key='star')
+          p (5)
         p.price {{ convertToIDR(product.price) }}
+        .availability
+          font-awesome-icon(:icon='["far", "square-check"]')
+          p Tersedia
         .cart-system
           .qty
-            .minus
+            .minus(
+              @click='qtyItem("minus")'
+            )
               font-awesome-icon(:icon="['fas', 'minus']")
-            p.count 1
-            .plus
+            p.count {{ qty }}
+            .plus(
+              @click='qtyItem("plus")'
+            )
               font-awesome-icon(:icon="['fas', 'plus']")
           button Tambah Ke Keranjang
           .icon
@@ -62,9 +79,9 @@
 </template>
 
 <script>
-import { computed, onMounted, ref } from '@vue/runtime-core'
+import { computed, nextTick, ref, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ProductCard from '@/components/ProductCard.vue'
 
 export default {
@@ -74,13 +91,36 @@ export default {
   setup () {
     const store = useStore()
     const route = useRoute()
+    const router = useRouter()
     const product = computed(() => store.getters.detailProduct)
     const displayedImage = ref('')
     const recommendation = computed(() => store.getters.allProduct)
+    const qty = ref(1)
 
-    onMounted(() => {
+    const getAllProduct = () => {
+      const payload = {
+        keyword: route.query.keyword,
+        price: route.query.price,
+        page: route.query.page,
+        limit: route.query.limit,
+        order: route.query.order
+      }
+
+      store.dispatch('GetAllProduct', payload)
+    }
+
+    watch(() => {
+      return route.params.id
+    }, (newVal) => {
+      if (newVal) {
+        getAllProduct()
+        store.dispatch('GetDetailProduct', { id: route.params.id })
+      }
+    })
+
+    nextTick(() => {
+      getAllProduct()
       store.dispatch('GetDetailProduct', { id: route.params.id })
-      console.log(recommendation)
     })
 
     const convertToIDR = (val) => {
@@ -88,6 +128,26 @@ export default {
       const convert = format.match(/\d{1,3}/g)
 
       return 'Rp ' + convert.join('.').split('').reverse().join('')
+    }
+
+    const refreshAction = () => {
+      router.push({ path: '/', query: route.query })
+    }
+
+    const qtyItem = (action) => {
+      if (action === 'minus') {
+        if (qty.value === 1) {
+          qty.value = 1
+        } else {
+          qty.value--
+        }
+      } else {
+        if (qty.value === 99) {
+          qty.value = 99
+        } else {
+          qty.value++
+        }
+      }
     }
 
     const changeImage = (val) => {
@@ -99,7 +159,10 @@ export default {
       convertToIDR,
       displayedImage,
       changeImage,
-      recommendation
+      recommendation,
+      qty,
+      qtyItem,
+      refreshAction
     }
   }
 }
@@ -108,6 +171,7 @@ export default {
 <style scoped>
 .container {
   padding: 20px 40px;
+  position: relative;
 }
 
 .product {
@@ -168,6 +232,7 @@ export default {
 .product .description {
   width: 60%;
   padding: 0 40px;
+  position: relative;
 }
 
 .product .description .name {
@@ -190,6 +255,12 @@ export default {
   font-size: 14px;
   line-height: 13px;
   color: #868686;
+  display: flex;
+  align-items: center;
+}
+
+.product .description .rating .icon {
+  color: #FFC107;
 }
 
 .product .description .price {
@@ -198,6 +269,13 @@ export default {
   line-height: 21px;
   color: #EB3F36;
   margin-top: 10px;
+}
+
+.product .description .availability {
+  display: flex;
+  position: absolute;
+  right: 40px;
+  color:  #6F8EFF;
 }
 
 .product .description .cart-system {
@@ -332,5 +410,16 @@ export default {
 .more-for-you .product {
   display: flex;
   gap: 1em;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading .back {
+  color: #EB3F36;
+  cursor: pointer;
 }
 </style>
