@@ -1,5 +1,7 @@
 <template lang="pug">
-.product-box
+.product-box(
+  @click='seeDetail(product.id)'
+)
   .image
     img(
       :src='product.images[0].image_url'
@@ -17,9 +19,12 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
 export default {
   props: ['product'],
   setup () {
+    const router = useRouter()
+
     const convertToIDR = (val) => {
       const format = val.toString().split('').reverse().join('')
       const convert = format.match(/\d{1,3}/g)
@@ -31,9 +36,14 @@ export default {
       return val.replace(/(.{20})..+/, '$1…')
     }
 
+    const seeDetail = (val) => {
+      router.push(`/${val}`)
+    }
+
     return {
       convertToIDR,
-      titleConverter
+      titleConverter,
+      seeDetail
     }
   }
 }

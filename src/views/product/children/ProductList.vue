@@ -34,7 +34,6 @@
           p Menampilkan
             select
               option(selected value='10') 10
-              option(value='10') 100
             |  dari {{ products.total }}
         .short
           p Urutkan
